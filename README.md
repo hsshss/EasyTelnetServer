@@ -12,6 +12,7 @@ Support few VT100 functions.
 		public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
 			terminal.write(argument);
 			terminal.write("\r\n");
+			terminal.flush();
 		}
 	});
 	

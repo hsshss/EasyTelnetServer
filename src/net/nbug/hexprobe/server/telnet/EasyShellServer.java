@@ -4,6 +4,7 @@ package net.nbug.hexprobe.server.telnet;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import net.nbug.hexprobe.util.StringUtils;
@@ -20,20 +21,29 @@ import net.nbug.hexprobe.util.StringUtils;
 public class EasyShellServer {
 	private final Map<String, Command> commands = new HashMap<String, Command>();
 	{
-		commands.put("exit", new Command() {
+	    addCommand("exit", new Command() {
 			@Override
 			public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
 				terminal.close();
 			}
 		});
 		
-		commands.put("help", new Command() {
+	    addCommand("help", new Command() {
 			@Override
 			public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
 				terminal.write(StringUtils.join(" ", commands.keySet()) + "\r\n");
 				terminal.flush();
 			}
 		});
+        
+        addCommand("logmode", new Command() {
+            @Override
+            public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
+                terminal.setLogMode(true);
+                terminal.write("LogMode enabled.\r\n");
+                terminal.flush();
+            }
+        });
 	}
 	
 	private EasyTelnetServer telnetd = null;
@@ -58,7 +68,7 @@ public class EasyShellServer {
 	}
 	
 	public void addCommand(String name, Command command) {
-		commands.put(name, command);
+		commands.put(name.toLowerCase(Locale.getDefault()), command);
 	}
 	
 	private class CommandProcessor implements OnCommandLineListener {
@@ -67,7 +77,7 @@ public class EasyShellServer {
 			try {
 				commandLine = commandLine.trim();
 				String[] tokens = commandLine.split(" ");
-				String name = tokens[0];
+				String name = tokens[0].toLowerCase(Locale.getDefault());
 				Command command = commands.get(name);
 				if (command != null) {
 					command.execute(name, commandLine.substring(name.length()).trim(), terminal);

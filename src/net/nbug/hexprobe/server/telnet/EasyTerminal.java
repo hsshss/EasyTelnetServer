@@ -19,4 +19,6 @@ public interface EasyTerminal {
 	public void close() throws IOException;
 	public InputStream getInputStream();
 	public Charset getEncoding();
+    public boolean isLogMode();
+    public void setLogMode(boolean logMode);
 }

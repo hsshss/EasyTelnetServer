@@ -38,6 +38,7 @@ class VT100Terminal implements EasyTerminal {
 	private int width = 80;
 	private int height = 24;
 	private byte[] screen = null;
+	private boolean logMode = false;
 	
 	public VT100Terminal(OutputStream out, InputStream in, Charset encoding) {
 		this.encoding = encoding;
@@ -64,6 +65,16 @@ class VT100Terminal implements EasyTerminal {
 	public Charset getEncoding() {
 		return encoding;
 	}
+    
+	@Override
+    public boolean isLogMode() {
+        return logMode;
+    }
+	
+	@Override
+	public void setLogMode(boolean logMode) {
+        this.logMode = logMode;
+    }
 
 	@Override
 	public void write(String s) throws IOException {
@@ -104,8 +115,15 @@ class VT100Terminal implements EasyTerminal {
 				out.write(String.valueOf(hi).getBytes(encoding.name()));
 				
 				if (x == width) {
-					x = 0;
-					newLine(true);
+				    if (logMode) {
+                        x = 0;
+                        newLine(true);
+				    } else {
+                        out.write(" \r".getBytes(encoding.name()));
+                        
+                        x = 0;
+                        newLine(false);
+				    }
 				}
 				break;
 				
@@ -117,8 +135,19 @@ class VT100Terminal implements EasyTerminal {
 				w = StringUtils.getPhisicalWidth(hi, lo);
 				
 				if (x + w > width) {
-					x = 0;
-					newLine(true);
+				    if (logMode) {
+                        x = 0;
+                        newLine(true);
+				    } else {
+                        for (; x < width; x++) {
+                            screen[y * width + x] = NONE;
+                            out.write(" ".getBytes(encoding.name()));
+                        }
+                        out.write(" \r".getBytes(encoding.name()));
+                        
+                        x = 0;
+                        newLine(false);
+				    }
 				}
 				
 				for (int i = 0; i < w; i++, x++) {
@@ -132,8 +161,15 @@ class VT100Terminal implements EasyTerminal {
 				}
 				
 				if (x == width) {
-					x = 0;
-					newLine(true);
+				    if (logMode) {
+                        x = 0;
+                        newLine(true);
+				    } else {
+                        out.write(" \r".getBytes(encoding.name()));
+                        
+                        x = 0;
+                        newLine(false);
+				    }
 				}
 			}
 		}
@@ -203,26 +239,31 @@ class VT100Terminal implements EasyTerminal {
 			}
 			
 			Arrays.fill(screen, (height - 1) * width, screen.length, NONE);
+
+            if (move) { 
+                out.write(ESC); 
+                out.write("[S".getBytes(encoding.name())); 
+            }
 		}
 		
 		if (move) {
 			out.write(ESC);
-			out.write("E".getBytes(encoding.name()));
+			out.write("[E".getBytes(encoding.name()));
 		}
 	}
 	
 	public void clearScreen() throws IOException {
-		Arrays.fill(screen, NONE);
-		
-		out.write(ESC);
-		out.write("[2J".getBytes(encoding.name()));
-		
-		x = 0;
-		y = 0;
-		
-		out.write(ESC);
-		out.write("[;H".getBytes(encoding.name()));
-		out.flush();
+        x = 0;
+        y = 0;
+        
+        out.write(ESC);
+        out.write("[1;1H".getBytes(encoding.name()));
+        
+        Arrays.fill(screen, NONE);
+        
+        out.write(ESC);
+        out.write("[J".getBytes(encoding.name()));
+        out.flush();
 		
 		if (onClearScreenListener != null) {
 			onClearScreenListener.onClearScreen();

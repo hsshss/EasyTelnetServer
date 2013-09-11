@@ -7,7 +7,7 @@ Support few VT100 functions.
 
 	EasyShellServer srv = new EasyShellServer();
 	
-	srv.addCommand("echo", new Command() {
+	srv.registerCommand("echo", new Command() {
 		@Override
 		public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
 			terminal.write(argument);

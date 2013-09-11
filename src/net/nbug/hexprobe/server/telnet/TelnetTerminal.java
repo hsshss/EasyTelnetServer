@@ -94,8 +94,7 @@ class TelnetTerminal {
 		
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		
-		terminal.write(prompt);
-		terminal.flush();
+		terminal.clearScreen();
 		
 		while (true) {
 			int b = read(in);

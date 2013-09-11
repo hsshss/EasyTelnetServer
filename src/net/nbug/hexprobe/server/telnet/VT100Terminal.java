@@ -216,7 +216,7 @@ class VT100Terminal implements EasyTerminal {
 		}
 	}
 	
-	private void clearScreen() throws IOException {
+	public void clearScreen() throws IOException {
 		Arrays.fill(screen, NONE);
 		
 		out.write(ESC);

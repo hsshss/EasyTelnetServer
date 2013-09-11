@@ -203,16 +203,11 @@ class VT100Terminal implements EasyTerminal {
 			}
 			
 			Arrays.fill(screen, (height - 1) * width, screen.length, NONE);
-			
-			if (move) {
-				out.write(ESC);
-				out.write("[S".getBytes(encoding.name()));
-			}
 		}
 		
 		if (move) {
 			out.write(ESC);
-			out.write("[E".getBytes(encoding.name()));
+			out.write("E".getBytes(encoding.name()));
 		}
 	}
 	

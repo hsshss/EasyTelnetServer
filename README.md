@@ -17,3 +17,15 @@ Support few VT100 functions.
 	});
 	
 	srv.start(23);
+
+## How to connect
+
+### Windows
+
+	> telnet localhost -t VT100
+
+### Other
+
+  * PuTTY
+  * TeraTerm
+  * GNU telnet

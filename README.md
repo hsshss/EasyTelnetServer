@@ -1,7 +1,7 @@
 # EasyTelnetServer
 
 A simple telnet server written in Java. <br />
-Support (roughly) VT100 control sequences.
+(Roughly) Support VT100 control sequences.
 
 ## Example
 

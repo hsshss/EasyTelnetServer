@@ -14,11 +14,11 @@ import java.nio.charset.Charset;
  *
  */
 public interface EasyTerminal {
-    public void write(String s) throws IOException;
-    public void flush() throws IOException;
-    public void close() throws IOException;
-    public InputStream getInputStream();
-    public Charset getEncoding();
-    public boolean isLogMode();
-    public void setLogMode(boolean logMode);
+    void write(String s) throws IOException;
+    void flush() throws IOException;
+    void close() throws IOException;
+    InputStream getInputStream();
+    Charset getEncoding();
+    boolean isLogMode();
+    void setLogMode(boolean logMode);
 }

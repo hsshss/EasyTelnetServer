@@ -20,10 +20,7 @@ import java.nio.charset.Charset;
  *
  */
 class TelnetTerminal {
-    public static final int NUL = 0x00;
     public static final int BS = 0x08;
-    public static final int HT = 0x09;
-    public static final int LF = 0x0a;
     public static final int CR = 0x0d;
     public static final int ESC = 0x1b;
     public static final int DEL = 0x7f;
@@ -104,7 +101,7 @@ class TelnetTerminal {
                 buf.reset();
                 buf.write(b);
 
-                int n = 0;
+                int n;
 
                 if (b <= UTF8_FIRST_MAX_1) {
                     n = 0;
@@ -118,6 +115,8 @@ class TelnetTerminal {
                     n = 4;
                 } else if (b <= UTF8_FIRST_MAX_6) {
                     n = 5;
+                } else {
+                    n = 0;
                 }
 
                 for (; n > 0; n--) {
@@ -133,7 +132,6 @@ class TelnetTerminal {
                 case CR:
                     terminal.write("\r\n");
                     terminal.flush();
-
 
                     if (onCommandLineListener != null) {
                         String line = lineBuf.toString();
@@ -159,12 +157,10 @@ class TelnetTerminal {
 
                 case ESC:
                     b = read(in);
-                    switch (b) {
-                    case CSI:
+                    if (b == CSI) {
                         do {
                             b = read(in);
                         } while (!(CSI_FINAL_BEGIN <= b && b <= CSI_FINAL_END));
-                        break;
                     }
                     break;
 
@@ -173,12 +169,10 @@ class TelnetTerminal {
                     switch (b) {
                     case IAC_SB:
                         b = read(in);
-                        switch (b) {
-                        case IAC_NAWS:
+                        if (b == IAC_NAWS) {
                             short width = in.readShort();
                             short height = in.readShort();
                             terminal.setScreenSize(width, height);
-                            break;
                         }
                         break;
 

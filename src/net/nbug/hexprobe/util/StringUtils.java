@@ -1,7 +1,5 @@
 package net.nbug.hexprobe.util;
 
-import java.util.Arrays;
-
 /**
  * StringUtils
  * 
@@ -15,7 +13,7 @@ public class StringUtils {
 	private StringUtils() {
 	}
 	
-	public static int getPhisicalWidth(char hi, char lo) {
+	public static int getPhysicalWidth(char hi) {
 		if (hi <= 127) {
 			if (' ' <= hi && hi <= '~') {
 				return 1;
@@ -43,9 +41,5 @@ public class StringUtils {
 			sb.append(str);
 		}
 		return sb.toString();
-	}
-	
-	public static String join(String delimiter, String... strings) {
-		return join(delimiter, Arrays.asList(strings));
 	}
 }

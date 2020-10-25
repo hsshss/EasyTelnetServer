@@ -37,7 +37,7 @@ class VT100Terminal implements EasyTerminal {
     private int y = 0;
     private int width = 80;
     private int height = 24;
-    private byte[] screen = null;
+    private byte[] screen;
     private boolean logMode = false;
 
     public VT100Terminal(OutputStream out, InputStream in, Charset encoding) {
@@ -79,8 +79,8 @@ class VT100Terminal implements EasyTerminal {
     @Override
     public void write(String s) throws IOException {
         char hi = 0;
-        char lo = 0;
-        int w = 0;
+        char lo;
+        int w;
 
         for (char c : s.toCharArray()) {
             if (Character.isHighSurrogate(c)) {
@@ -132,7 +132,7 @@ class VT100Terminal implements EasyTerminal {
                     break;
                 }
 
-                w = StringUtils.getPhisicalWidth(hi, lo);
+                w = StringUtils.getPhysicalWidth(hi);
 
                 if (x + w > width) {
                     if (logMode) {
@@ -191,8 +191,8 @@ class VT100Terminal implements EasyTerminal {
         }
     }
 
-    public boolean backSpace() throws IOException {
-        int i = 0;
+    public void backSpace() throws IOException {
+        int i;
         boolean found = false;
         int orgX = x;
         int orgY = y;
@@ -222,10 +222,6 @@ class VT100Terminal implements EasyTerminal {
                 out.write("[J".getBytes(encoding.name()));
                 out.flush();
             }
-
-            return true;
-        } else {
-            return false;
         }
     }
     
@@ -233,7 +229,6 @@ class VT100Terminal implements EasyTerminal {
         if (offX > 0) {
             out.write(ESC);
             out.write(String.format("[%dC", offX).getBytes(encoding.name()));
-            
         } else if(offX < 0) {
             out.write(ESC);
             out.write(String.format("[%dD", -offX).getBytes(encoding.name()));
@@ -275,7 +270,7 @@ class VT100Terminal implements EasyTerminal {
         }
     }
 
-    public void clearScreen() throws IOException {
+    private void clearScreen() throws IOException {
         x = 0;
         y = 0;
 

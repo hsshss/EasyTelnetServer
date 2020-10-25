@@ -12,5 +12,5 @@ import java.io.IOException;
  *
  */
 interface OnClearScreenListener {
-    public void onClearScreen() throws IOException;
+    void onClearScreen() throws IOException;
 }

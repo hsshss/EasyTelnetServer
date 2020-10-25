@@ -102,6 +102,6 @@ public class EasyShellServer {
     }
 
     public interface Command {
-        public abstract void execute(String name, String argument, EasyTerminal terminal) throws IOException;
+        void execute(String name, String argument, EasyTerminal terminal) throws IOException;
     }
 }

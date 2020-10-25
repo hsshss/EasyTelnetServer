@@ -12,5 +12,5 @@ import java.io.IOException;
  *
  */
 public interface OnCommandLineListener {
-    public void OnCommandLine(EasyTerminal terminal, String commandLine) throws IOException;
+    void OnCommandLine(EasyTerminal terminal, String commandLine) throws IOException;
 }

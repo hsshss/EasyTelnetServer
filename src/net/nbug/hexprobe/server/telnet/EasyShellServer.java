@@ -29,7 +29,7 @@ public class EasyShellServer {
         registerCommand("help", new Command() {
             @Override
             public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
-                terminal.write(StringUtils.join(" ", commands.keySet()) + "\r\n");
+                terminal.writeLine(StringUtils.join(" ", commands.keySet()));
                 terminal.flush();
             }
         });
@@ -39,10 +39,10 @@ public class EasyShellServer {
             public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
                 if (terminal.isLogMode()) {
                     terminal.setLogMode(false);
-                    terminal.write("LogMode disabled.\r\n");
+                    terminal.writeLine("LogMode disabled.");
                 } else {
                     terminal.setLogMode(true);
-                    terminal.write("LogMode enabled.\r\n");
+                    terminal.writeLine("LogMode enabled.");
                 }
                 terminal.flush();
             }
@@ -88,14 +88,14 @@ public class EasyShellServer {
                 } else if (name.isEmpty()) {
                     // Do nothing
                 } else {
-                    terminal.write("Command not found.\r\n");
+                    terminal.writeLine("Command not found.");
                     terminal.flush();
                 }
             } catch (IOException e) {
                 throw e;
             } catch (Exception e) {
                 e.printStackTrace();
-                terminal.write("Error: " + e.toString() + "\r\n");
+                terminal.writeLine("Error: " + e.toString());
                 terminal.flush();
             }
         }

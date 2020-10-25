@@ -10,8 +10,7 @@ A simple telnet server written in Java. <br />
 	srv.registerCommand("echo", new Command() {
 		@Override
 		public void execute(String name, String argument, EasyTerminal terminal) throws IOException {
-			terminal.write(argument);
-			terminal.write("\r\n");
+			terminal.writeLine(argument);
 			terminal.flush();
 		}
 	});

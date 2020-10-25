@@ -176,6 +176,12 @@ class VT100Terminal implements EasyTerminal {
     }
 
     @Override
+    public void writeLine(String s) throws IOException {
+        write(s);
+        write("\r\n");
+    }
+
+    @Override
     public void flush() throws IOException {
         out.flush();
     }

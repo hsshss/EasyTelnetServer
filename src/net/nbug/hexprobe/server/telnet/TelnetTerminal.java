@@ -130,7 +130,7 @@ class TelnetTerminal {
             } else {
                 switch (b) {
                 case CR:
-                    terminal.write("\r\n");
+                    terminal.writeLine("");
                     terminal.flush();
 
                     if (onCommandLineListener != null) {

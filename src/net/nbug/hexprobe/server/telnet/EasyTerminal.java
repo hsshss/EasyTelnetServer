@@ -15,6 +15,7 @@ import java.nio.charset.Charset;
  */
 public interface EasyTerminal {
     void write(String s) throws IOException;
+    void writeLine(String s) throws IOException;
     void flush() throws IOException;
     void close() throws IOException;
     InputStream getInputStream();

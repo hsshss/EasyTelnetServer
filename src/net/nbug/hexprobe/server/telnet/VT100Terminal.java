@@ -1,8 +1,6 @@
 package net.nbug.hexprobe.server.telnet;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -18,8 +16,28 @@ import net.nbug.hexprobe.util.StringUtils;
  *
  */
 class VT100Terminal implements EasyTerminal {
+    public static final int BS = 0x08;
+    public static final int CR = 0x0d;
     public static final int ESC = 0x1b;
     public static final int DEL = 0x7f;
+
+    public static final int UTF8_FIRST_BEGIN = 0x20;
+    public static final int UTF8_FIRST_MAX_1 = 0x7f;
+    public static final int UTF8_FIRST_MAX_2 = 0xdf;
+    public static final int UTF8_FIRST_MAX_3 = 0xef;
+    public static final int UTF8_FIRST_MAX_4 = 0xf7;
+    public static final int UTF8_FIRST_MAX_5 = 0xfb;
+    public static final int UTF8_FIRST_MAX_6 = 0xfd;
+    public static final int UTF8_FIRST_END = UTF8_FIRST_MAX_6;
+
+    public static final int IAC = 0xff;
+    public static final int IAC_NAWS = 0x1f;
+    public static final int IAC_SB = 0xfa;
+    public static final int IAC_SE = 0xf0;
+
+    public static final int CSI = 0x5b;
+    public static final int CSI_FINAL_BEGIN = 0x40;
+    public static final int CSI_FINAL_END = 0x7e;
 
     private static final int TAB_SIZE = 8;
 
@@ -28,8 +46,8 @@ class VT100Terminal implements EasyTerminal {
     private static final byte SUBSEQ = 2;
 
     private final Charset encoding;
-    private final OutputStream out;
-    private final InputStream in;
+    private final DataOutputStream out;
+    private final DataInputStream in;
 
     private OnClearScreenListener onClearScreenListener = null;
 
@@ -40,7 +58,7 @@ class VT100Terminal implements EasyTerminal {
     private byte[] screen;
     private boolean logMode = false;
 
-    public VT100Terminal(OutputStream out, InputStream in, Charset encoding) {
+    public VT100Terminal(DataOutputStream out, DataInputStream in, Charset encoding) {
         this.encoding = encoding;
         this.out = out;
         this.in = in;
@@ -74,6 +92,94 @@ class VT100Terminal implements EasyTerminal {
     @Override
     public void setLogMode(boolean logMode) {
         this.logMode = logMode;
+    }
+
+    @Override
+    public String readLine() throws IOException {
+        StringBuilder lineBuf = new StringBuilder();
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+
+        while (true) {
+            int b = read(in);
+
+            if (UTF8_FIRST_BEGIN <= b && b <= UTF8_FIRST_END && b != DEL) {
+                buf.reset();
+                buf.write(b);
+
+                int n;
+
+                if (b <= UTF8_FIRST_MAX_1) {
+                    n = 0;
+                } else if (b <= UTF8_FIRST_MAX_2) {
+                    n = 1;
+                } else if (b <= UTF8_FIRST_MAX_3) {
+                    n = 2;
+                } else if (b <= UTF8_FIRST_MAX_4) {
+                    n = 3;
+                } else if (b <= UTF8_FIRST_MAX_5) {
+                    n = 4;
+                } else if (b <= UTF8_FIRST_MAX_6) {
+                    n = 5;
+                } else {
+                    n = 0;
+                }
+
+                for (; n > 0; n--) {
+                    buf.write(read(in));
+                }
+
+                String tmp = buf.toString(encoding.name());
+                lineBuf.append(tmp);
+                write(tmp);
+                flush();
+            } else {
+                switch (b) {
+                case CR:
+                    writeLine("");
+                    flush();
+                    return lineBuf.toString();
+
+                case DEL:
+                case BS:
+                    if (lineBuf.length() > 0) {
+                        backSpace();
+                        String tmp = biteTail(lineBuf.toString());
+                        lineBuf.setLength(0);
+                        lineBuf.append(tmp);
+                    }
+                    break;
+
+                case ESC:
+                    b = read(in);
+                    if (b == CSI) {
+                        do {
+                            b = read(in);
+                        } while (!(CSI_FINAL_BEGIN <= b && b <= CSI_FINAL_END));
+                    }
+                    break;
+
+                case IAC:
+                    b = read(in);
+                    switch (b) {
+                    case IAC_SB:
+                        b = read(in);
+                        if (b == IAC_NAWS) {
+                            short width = in.readShort();
+                            short height = in.readShort();
+                            setScreenSize(width, height);
+                        }
+                        break;
+
+                    case IAC_SE:
+                        break;
+
+                    default:
+                        read(in);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -186,7 +292,7 @@ class VT100Terminal implements EasyTerminal {
         out.flush();
     }
     
-    public void setScreenSize(int width, int height) throws IOException {
+    private void setScreenSize(int width, int height) throws IOException {
         if (this.width != width || this.height != height) {
             this.width = width;
             this.height = height;
@@ -197,7 +303,7 @@ class VT100Terminal implements EasyTerminal {
         }
     }
 
-    public void backSpace() throws IOException {
+    private void backSpace() throws IOException {
         int i;
         boolean found = false;
         int orgX = x;
@@ -292,5 +398,24 @@ class VT100Terminal implements EasyTerminal {
         if (onClearScreenListener != null) {
             onClearScreenListener.onClearScreen();
         }
+    }
+
+    private static int read(InputStream s) throws IOException {
+        int b = s.read();
+        if (b >= 0) {
+            return b;
+        } else {
+            throw new IOException();
+        }
+    }
+
+    private static String biteTail(String s) {
+        char[] str = s.toCharArray();
+        for (int i = str.length - 1; i >= 0; i--) {
+            if (!Character.isLowSurrogate(str[i])) {
+                return new String(str, 0, i);
+            }
+        }
+        return "";
     }
 }

@@ -22,6 +22,7 @@ public interface EasyTerminal {
     void close() throws IOException;
     InputStream getInputStream();
     Charset getEncoding();
+    void setPrompt(String prompt);
     boolean isEcho();
     void setEcho(boolean enable);
     boolean isLogMode();

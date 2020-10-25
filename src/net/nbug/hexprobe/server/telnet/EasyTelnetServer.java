@@ -1,8 +1,11 @@
 package net.nbug.hexprobe.server.telnet;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
 
 /**
  * EasyTelnetServer
@@ -98,7 +101,11 @@ public class EasyTelnetServer {
         @Override
         public void run() {
             try {
-                TelnetTerminal telnet = new TelnetTerminal(sock.getOutputStream(), sock.getInputStream());
+                TelnetTerminal telnet =
+                    new TelnetTerminal(
+                        new DataOutputStream(sock.getOutputStream()),
+                        new DataInputStream(sock.getInputStream()),
+                        Charset.forName("UTF-8"));
                 if (prompt != null) {
                     telnet.setPrompt(prompt);
                 }

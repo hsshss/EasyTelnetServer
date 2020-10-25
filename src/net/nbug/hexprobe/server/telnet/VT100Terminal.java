@@ -3,6 +3,9 @@ package net.nbug.hexprobe.server.telnet;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import net.nbug.hexprobe.util.StringUtils;
 
@@ -48,6 +51,7 @@ class VT100Terminal implements EasyTerminal {
     private final Charset encoding;
     private final DataOutputStream out;
     private final DataInputStream in;
+    private final Map<String, Object> session;
 
     private OnClearScreenListener onClearScreenListener = null;
 
@@ -64,6 +68,7 @@ class VT100Terminal implements EasyTerminal {
         this.out = out;
         this.in = in;
         this.screen = new byte[height * width];
+        this.session = new HashMap<String, Object>();
     }
 
     public void setOnClearScreenListener(OnClearScreenListener onClearScreenListener) {
@@ -103,6 +108,21 @@ class VT100Terminal implements EasyTerminal {
     @Override
     public void setLogMode(boolean logMode) {
         this.logMode = logMode;
+    }
+
+    @Override
+    public Set<String> getSessionKeys() {
+        return session.keySet();
+    }
+
+    @Override
+    public Object getSession(String key) {
+        return session.get(key);
+    }
+
+    @Override
+    public void setSession(String key, Object value) {
+        session.put(key, value);
     }
 
     @Override

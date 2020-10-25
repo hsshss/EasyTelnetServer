@@ -56,6 +56,7 @@ class VT100Terminal implements EasyTerminal {
     private int width = 80;
     private int height = 24;
     private byte[] screen;
+    private boolean echo = true;
     private boolean logMode = false;
 
     public VT100Terminal(DataOutputStream out, DataInputStream in, Charset encoding) {
@@ -82,6 +83,16 @@ class VT100Terminal implements EasyTerminal {
     @Override
     public Charset getEncoding() {
         return encoding;
+    }
+
+    @Override
+    public boolean isEcho() {
+        return echo;
+    }
+
+    @Override
+    public void setEcho(boolean enable) {
+        echo = enable;
     }
 
     @Override
@@ -130,13 +141,17 @@ class VT100Terminal implements EasyTerminal {
 
                 String tmp = buf.toString(encoding.name());
                 lineBuf.append(tmp);
-                write(tmp);
-                flush();
+                if (echo) {
+                    write(tmp);
+                    flush();
+                }
             } else {
                 switch (b) {
                 case CR:
-                    writeLine("");
-                    flush();
+                    if (echo) {
+                        writeLine("");
+                        flush();
+                    }
                     return lineBuf.toString();
 
                 case DEL:

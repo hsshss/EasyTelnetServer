@@ -21,6 +21,8 @@ public interface EasyTerminal {
     void close() throws IOException;
     InputStream getInputStream();
     Charset getEncoding();
+    boolean isEcho();
+    void setEcho(boolean enable);
     boolean isLogMode();
     void setLogMode(boolean logMode);
 }
